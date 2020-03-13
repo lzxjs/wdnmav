@@ -59,7 +59,7 @@
       <div>
         <p style="margin-top: 10px;margin-bottom: 10px;text-align: center">该站完成时间：2020年3月13日，后续不再更新</p>
         <p style="margin-bottom: 10px;text-align: center;color: red">部分视频可能无法播放，请换一个视频看</p>
-        <p style="margin-bottom: 10px;text-align: center;color: red">不要相信视频中的光谷</p>
+        <p style="margin-bottom: 10px;text-align: center;color: red">不要相信视频中的广告</p>
         <p style="text-align: center">番茄出品，必属精品。</p>
         <p style="margin-top: 10px;margin-bottom: 10px;text-align: center">纵有千古，横有八荒，前途似海，来日方长。</p>
       </div>
@@ -148,7 +148,8 @@ export default {
       },
       close: true,
       isPlay: false,
-      closeTip: 20
+      closeTip: 20,
+      searchFlag: false
     };
   },
   methods: {
@@ -157,12 +158,13 @@ export default {
         this.options = [...res.data.rescont];
       });
     },
-    checkCate(val) {
+    checkCate(val,pages) {
+      this.searchFlag = false
       this.search = "";
       this.loading = true;
       this.noData = false;
       this.pageInfo.id = Number(val);
-      this.pageInfo.page = 1;
+      this.pageInfo.page = pages;
       axios
         .get("https://api.wdnm.icu/av/getlist.php", {
           params: { ...this.pageInfo }
@@ -175,7 +177,7 @@ export default {
           this.loading = false;
         });
     },
-    searchVideo() {
+    searchVideo(pages) {
       if (this.search == "") {
         this.$notify({
           title: "警告",
@@ -184,13 +186,20 @@ export default {
           position: "bottom-left"
         });
       } else {
+      this.searchFlag = true
         this.loading = true;
         this.value = "";
-        this.pageInfo.page = 1;
+        if (pages instanceof Object) {
+          this.pageInfo.page = 1
+        }else {
+          this.pageInfo.page = pages;
+        }
+        
         let data = {
           page: this.pageInfo.page,
           search: this.search
         };
+        console.log(data);
         axios
           .get("https://api.wdnm.icu/av/search.php", {
             params: { ...data }
@@ -213,18 +222,11 @@ export default {
     },
     changePage(val) {
       this.isCheck = null;
-      this.pageInfo.page = val;
-      axios
-        .get("https://api.wdnm.icu/av/getlist.php", {
-          params: { ...this.pageInfo }
-        })
-        .then(res => {
-          this.listData = [...res.data.rescont.data];
-          this.pageInfo.total = res.data.rescont.total;
-        })
-        .finally(() => {
-          this.loading = false;
-        });
+      if (!this.searchFlag) {
+       this.checkCate(this.pageInfo.id, val)
+      }else {
+        this.searchVideo(val)
+      }
     },
     handleSelect(item) {
       this.toPlay(item.id);

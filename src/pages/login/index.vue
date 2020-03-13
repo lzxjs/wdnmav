@@ -51,7 +51,7 @@ export default {
       this.btnLoading = true;
       this.$refs[formName].validate(valid => {
         if (valid) {
-          if (this.ruleForm.password === "123") {
+          if (this.ruleForm.password === "fanqie") {
             this.$notify({
               title: "登录成功",
               message: "密码正确",
