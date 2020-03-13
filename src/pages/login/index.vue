@@ -31,6 +31,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "login",
   data() {
@@ -51,26 +53,34 @@ export default {
       this.btnLoading = true;
       this.$refs[formName].validate(valid => {
         if (valid) {
-          if (this.ruleForm.password === "fanqie") {
-            this.$notify({
-              title: "登录成功",
-              message: "密码正确",
-              type: "success",
-              position: "bottom-left",
-              duration: 2000
+          axios
+            .get("https://api.wdnm.icu/av/key.php", {
+              params: {
+                key: this.ruleForm.password
+              }
+            })
+            .then(res => {
+              if (res.data.code == "200") {
+                this.$notify({
+                  title: "登录成功",
+                  message: "密码正确",
+                  type: "success",
+                  position: "bottom-left",
+                  duration: 2000
+                });
+                this.$router.push("/home");
+              } else {
+                this.btnText = "登录";
+                this.btnLoading = false;
+                this.$notify.error({
+                  title: "密码错误",
+                  message: "请检查密码",
+                  position: "bottom-left",
+                  duration: 2000
+                });
+                this.ruleForm.password = "";
+              }
             });
-            this.$router.push("/home");
-          } else {
-            this.btnText = "登录";
-            this.btnLoading = false;
-            this.$notify.error({
-              title: "密码错误",
-              message: "请检查密码",
-              position: "bottom-left",
-              duration: 2000
-            });
-            this.ruleForm.password = "";
-          }
         } else {
           this.btnText = "登录";
           this.btnLoading = false;
