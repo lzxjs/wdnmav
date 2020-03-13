@@ -2,9 +2,13 @@
   <div class="home-container">
     <div style="padding: 20px;">
       <div>
-        <el-select v-model="value" @change="checkCate" placeholder="请选择">
+        <el-select v-model="value" @change="checkCate" placeholder="类别推荐">
           <el-option v-for="item in options" :key="item.id" :label="item.name" :value="item.id"></el-option>
         </el-select>
+      </div>
+      <div class="search">
+        <el-input clearable v-model="search" placeholder="输入要搜索的内容"></el-input>
+        <el-button @click="searchVideo" type="primary">搜索</el-button>
       </div>
       <div class="author" @click="drawer = true">
         <p>点</p>
@@ -15,9 +19,14 @@
         <p>明</p>
       </div>
     </div>
-    <div class="list" v-loading="loading">
+    <div class="list" v-loading="loading" element-loading-background="rgba(255, 255, 255, 0)">
       <ul v-show="!loading">
-        <li @click="toPlay(item.id)" v-for="item in listData" :key="item.id">
+        <li
+          :class="[isCheck == index ? 'check' : '']"
+          @click="toPlay(item.id, index)"
+          v-for="(item, index) in listData"
+          :key="item.id"
+        >
           <p>
             <span>{{ item.title }}</span>
           </p>
@@ -29,7 +38,7 @@
     <div class="page" v-show="listData.length">
       <el-pagination
         @current-change="changePage"
-        background
+        :small="true"
         prev-text="上一页"
         next-text="下一页"
         layout="prev, pager, next"
@@ -48,17 +57,17 @@
         </el-carousel>
       </div>
       <div>
-        <p style="margin-top: 10px;margin-bottom: 10px;text-align: center">推荐使用浏览器访问，不影响您其它的工作</p>
-        <p style="margin-bottom: 10px;text-align: center">该站完成时间：2020年3月12日，后续不再更新</p>
-        <p style="margin-bottom: 10px;text-align: center;color: red">部分视频可能无法播放</p>
-        <p style="margin-bottom: 10px;text-align: center;color: red">这个时候请你别铁头娃，换一个视频看</p>
+        <p style="margin-top: 10px;margin-bottom: 10px;text-align: center">该站完成时间：2020年3月13日，后续不再更新</p>
+        <p style="margin-bottom: 10px;text-align: center;color: red">部分视频可能无法播放，请换一个视频看</p>
+        <p style="margin-bottom: 10px;text-align: center;color: red">不要相信视频中的光谷</p>
         <p style="text-align: center">番茄出品，必属精品。</p>
+        <p style="margin-top: 10px;margin-bottom: 10px;text-align: center">纵有千古，横有八荒，前途似海，来日方长。</p>
       </div>
     </el-drawer>
 
     <el-drawer size="100%" :visible.sync="player" @close="closePlayer" :direction="directionTwo">
       <div class="block">
-        <div v-if='isPlay'>
+        <div v-if="isPlay">
           <video-player
             class="video-player-box vjs-custom-skin"
             ref="videoPlayer"
@@ -90,6 +99,8 @@ export default {
   },
   data() {
     return {
+      isCheck: null,
+      search: "",
       movieImg: [
         "https://cdn.92lzx.cn/movieOne.jpeg",
         "https://cdn.92lzx.cn/movieTwo.jpeg",
@@ -136,7 +147,8 @@ export default {
         }
       },
       close: true,
-      isPlay: false
+      isPlay: false,
+      closeTip: 20
     };
   },
   methods: {
@@ -146,8 +158,11 @@ export default {
       });
     },
     checkCate(val) {
+      this.search = "";
       this.loading = true;
+      this.noData = false;
       this.pageInfo.id = Number(val);
+      this.pageInfo.page = 1;
       axios
         .get("https://api.wdnm.icu/av/getlist.php", {
           params: { ...this.pageInfo }
@@ -160,9 +175,56 @@ export default {
           this.loading = false;
         });
     },
+    searchVideo() {
+      if (this.search == "") {
+        this.$notify({
+          title: "警告",
+          message: "请输入要搜索的内容",
+          type: "warning",
+          position: "bottom-left"
+        });
+      } else {
+        this.loading = true;
+        this.value = "";
+        this.pageInfo.page = 1;
+        let data = {
+          page: this.pageInfo.page,
+          search: this.search
+        };
+        axios
+          .get("https://api.wdnm.icu/av/search.php", {
+            params: { ...data }
+          })
+          .then(res => {
+            if (res.data.rescont.data.length === 0) {
+              this.noData = true;
+              this.listData = [...res.data.rescont.data];
+              this.pageInfo.total = res.data.rescont.total;
+            } else {
+              this.noData = false;
+              this.listData = [...res.data.rescont.data];
+              this.pageInfo.total = res.data.rescont.total;
+            }
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+      }
+    },
     changePage(val) {
+      this.isCheck = null;
       this.pageInfo.page = val;
-      this.checkCate(this.pageInfo.id);
+      axios
+        .get("https://api.wdnm.icu/av/getlist.php", {
+          params: { ...this.pageInfo }
+        })
+        .then(res => {
+          this.listData = [...res.data.rescont.data];
+          this.pageInfo.total = res.data.rescont.total;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     handleSelect(item) {
       this.toPlay(item.id);
@@ -170,8 +232,9 @@ export default {
     change() {
       this.pageInfo.page = 1;
     },
-    toPlay(id) {
-      this.isPlay = true
+    toPlay(id, index) {
+      this.isCheck = index;
+      this.isPlay = true;
       this.player = true;
       axios
         .get("https://api.wdnm.icu/av/getcontent.php", {
@@ -199,8 +262,8 @@ export default {
         }
       }, 1000);
     },
-    closePlayer () {
-      this.isPlay = false
+    closePlayer() {
+      this.isPlay = false;
     }
   },
   components: {
@@ -211,6 +274,10 @@ export default {
 
 <style lang="scss" scoped>
 .home-container {
+  .check {
+    background: rgb(243, 186, 94);
+    color: #fff;
+  }
   /deep/ .el-drawer__header {
     margin-bottom: 10px;
     padding: 10px 10px 0;
@@ -218,9 +285,15 @@ export default {
   /deep/ .el-drawer__open .el-drawer.ttb {
     height: 70% !important;
   }
+  .search {
+    margin-top: 15px;
+    /deep/ .el-input {
+      width: 77%;
+    }
+  }
   .author {
     position: fixed;
-    top: 80px;
+    top: 100px;
     left: 0;
     background: rgb(243, 186, 94);
     color: #fff;
@@ -233,6 +306,7 @@ export default {
 }
 .page {
   margin-bottom: 20px;
+  text-align: center;
 }
 .list {
   padding: 20px;
@@ -241,7 +315,7 @@ export default {
     li {
       border: 1px solid #ccc;
       border-radius: 10px;
-      padding: 15px;
+      padding: 20px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -252,7 +326,6 @@ export default {
         width: 80%;
       }
       p {
-        margin-top: 15px;
         font-size: 18px;
         .titles {
           color: rgb(255, 86, 34);
