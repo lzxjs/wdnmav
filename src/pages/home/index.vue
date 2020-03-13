@@ -60,6 +60,7 @@
         <p style="margin-top: 10px;margin-bottom: 10px;text-align: center">该站完成时间：2020年3月13日，后续不再更新</p>
         <p style="margin-bottom: 10px;text-align: center;color: red">部分视频可能无法播放，请换一个视频看</p>
         <p style="margin-bottom: 10px;text-align: center;color: red">不要相信视频中的广告</p>
+        <p style="margin-bottom: 10px;text-align: center;color: red">喜欢本站也不要分享给你的朋友，人多了会封站</p>
         <p style="text-align: center">番茄出品，必属精品。</p>
         <p style="margin-top: 10px;margin-bottom: 10px;text-align: center">纵有千古，横有八荒，前途似海，来日方长。</p>
       </div>
@@ -82,6 +83,11 @@
           :speed="10"
           style="margin-top: 20px;color: red;"
         ></MarqueeTips>
+
+        <div style='padding: 20px;box-sizing: border-box;font-size: 16px;margin-top: 10px'>
+          <p>片名：{{ videoInfo.title || '/' }}</p>
+          <p style='margin-top: 15px'>更新时间：{{ videoInfo.created_at || '/' }}</p>
+        </div>
       </div>
     </el-drawer>
   </div>
@@ -149,7 +155,8 @@ export default {
       close: true,
       isPlay: false,
       closeTip: 20,
-      searchFlag: false
+      searchFlag: false,
+      videoInfo: []
     };
   },
   methods: {
@@ -158,8 +165,9 @@ export default {
         this.options = [...res.data.rescont];
       });
     },
-    checkCate(val,pages) {
-      this.searchFlag = false
+    checkCate(val, pages) {
+      this.isCheck = null;
+      this.searchFlag = false;
       this.search = "";
       this.loading = true;
       this.noData = false;
@@ -186,20 +194,21 @@ export default {
           position: "bottom-left"
         });
       } else {
-      this.searchFlag = true
+        this.isCheck = null;
+        this.searchFlag = true;
         this.loading = true;
         this.value = "";
         if (pages instanceof Object) {
-          this.pageInfo.page = 1
-        }else {
+          this.pageInfo.page = 1;
+        } else {
           this.pageInfo.page = pages;
         }
-        
+
         let data = {
           page: this.pageInfo.page,
           search: this.search
         };
-        console.log(data);
+
         axios
           .get("https://api.wdnm.icu/av/search.php", {
             params: { ...data }
@@ -223,9 +232,9 @@ export default {
     changePage(val) {
       this.isCheck = null;
       if (!this.searchFlag) {
-       this.checkCate(this.pageInfo.id, val)
-      }else {
-        this.searchVideo(val)
+        this.checkCate(this.pageInfo.id, val);
+      } else {
+        this.searchVideo(val);
       }
     },
     handleSelect(item) {
@@ -245,6 +254,7 @@ export default {
           }
         })
         .then(res => {
+          this.videoInfo = {...res.data.rescont}
           let src = res.data.rescont.videopath;
           let myPlayer = this.$refs.videoPlayer.player;
           myPlayer.src(src);
