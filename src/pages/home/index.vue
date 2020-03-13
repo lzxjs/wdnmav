@@ -101,7 +101,32 @@ import MarqueeTips from "vue-marquee-tips";
 export default {
   name: "home",
   created() {
-    this.getCate();
+    let auth = JSON.parse(sessionStorage.getItem('auth'))
+    if (auth) {
+      axios.get("https://api.wdnm.icu/av/key.php", {params: { key: auth.pwd }}).then(res => {
+        if (res.data.key == auth.key) {
+          this.getCate();
+        }else {
+          this.$notify({
+            title: "错误",
+            message: "非法请求，请重新输入密码",
+            type: "error",
+            position: "bottom-left",
+            duration: 2000
+          });
+          this.$router.push('/')
+        }
+      })
+    } else {
+      this.$notify({
+        title: "错误",
+        message: "非法请求，请重新输入密码",
+        type: "error",
+        position: "bottom-left",
+        duration: 2000
+      });
+      this.$router.push('/')
+    }
   },
   data() {
     return {

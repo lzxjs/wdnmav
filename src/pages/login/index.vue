@@ -35,6 +35,9 @@ import axios from "axios";
 
 export default {
   name: "login",
+  created () {
+    sessionStorage.removeItem('auth')
+  },
   data() {
     return {
       ruleForm: {
@@ -68,6 +71,12 @@ export default {
                   position: "bottom-left",
                   duration: 2000
                 });
+                let auth = {
+                  pwd: this.ruleForm.password,
+                  key: res.data.key
+                }
+                sessionStorage.setItem('auth', JSON.stringify(auth))
+
                 this.$router.push("/home");
               } else {
                 this.btnText = "登录";
