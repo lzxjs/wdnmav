@@ -57,7 +57,7 @@ export default {
       this.$refs[formName].validate(valid => {
         if (valid) {
           axios
-            .get("https://api.wdnm.icu/av/key.php", {
+            .get("https://apiv1.wdnm.icu/av/key.php", {
               params: {
                 key: this.ruleForm.password
               }

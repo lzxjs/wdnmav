@@ -13,15 +13,14 @@ export default {
 </script>
 
 <style>
-@import "../src/assets/font/font.css";
-
 * {
   margin: 0;
   padding: 0;
 }
 
-.el-autocomplete-suggestion__wrap {
-  max-height: 3.75rem!important;
+/* @font-face {
+  font-family: "BOLD";
+  src: url('https://cdn.92lzx.cn/ziti.otf');
 }
 
 body,
@@ -31,7 +30,7 @@ html,
   width: 100%;
   height: 100%;
   font-family: BOLD;
-}
+} */
 
 .v-enter,
 .v-leave-to {

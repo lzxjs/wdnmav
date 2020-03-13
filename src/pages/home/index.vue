@@ -95,7 +95,6 @@
 
 <script>
 import axios from "axios";
-import { Toast } from "mint-ui";
 import MarqueeTips from "vue-marquee-tips";
 
 export default {
@@ -103,7 +102,7 @@ export default {
   created() {
     let auth = JSON.parse(sessionStorage.getItem('auth'))
     if (auth) {
-      axios.get("https://api.wdnm.icu/av/key.php", {params: { key: auth.pwd }}).then(res => {
+      axios.get("https://apiv1.wdnm.icu/av/key.php", {params: { key: auth.pwd }}).then(res => {
         if (res.data.key == auth.key) {
           this.getCate();
         }else {
@@ -186,7 +185,7 @@ export default {
   },
   methods: {
     getCate() {
-      axios.get("https://api.wdnm.icu/av/getcategory.php").then(res => {
+      axios.get("https://apiv1.wdnm.icu/av/getcategory.php").then(res => {
         this.options = [...res.data.rescont];
       });
     },
@@ -199,7 +198,7 @@ export default {
       this.pageInfo.id = Number(val);
       this.pageInfo.page = pages;
       axios
-        .get("https://api.wdnm.icu/av/getlist.php", {
+        .get("https://apiv1.wdnm.icu/av/getlist.php", {
           params: { ...this.pageInfo }
         })
         .then(res => {
@@ -235,7 +234,7 @@ export default {
         };
 
         axios
-          .get("https://api.wdnm.icu/av/search.php", {
+          .get("https://apiv1.wdnm.icu/av/search.php", {
             params: { ...data }
           })
           .then(res => {
@@ -273,7 +272,7 @@ export default {
       this.isPlay = true;
       this.player = true;
       axios
-        .get("https://api.wdnm.icu/av/getcontent.php", {
+        .get("https://apiv1.wdnm.icu/av/getcontent.php", {
           params: {
             id
           }
@@ -287,7 +286,6 @@ export default {
         })
         .catch(e => {
           this.loading = false;
-          Toast("获取资源失败，请点击右上角的刷新按钮再试一次吧");
         });
     },
     closeMarquee() {

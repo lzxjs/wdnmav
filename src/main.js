@@ -5,26 +5,12 @@ import App from './App'
 import router from './router'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-import './assets/styles/reset.css'
-import './assets/styles/border.css'
 import VueVideoPlayer from 'vue-video-player'
-import Mint from 'mint-ui';
-import 'mint-ui/lib/style.css'
-Vue.use(Mint);
-
+import 'video.js/dist/video-js.css'
 const hls = require('videojs-contrib-hls')
 Vue.use(hls)
 
-
-
-// require videojs style
-import 'video.js/dist/video-js.css'
-// import 'vue-video-player/src/custom-theme.css'
-
-Vue.use(VueVideoPlayer, /* {
-  options: global default options,
-  events: global videojs events
-} */)
+Vue.use(VueVideoPlayer)
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 
